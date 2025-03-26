@@ -1,15 +1,19 @@
 package pl.babinski.lab
 
 import android.os.Bundle
+import android.util.Log
 import android.view.Gravity
 import android.view.View
 import android.widget.ImageButton
+import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.gridlayout.widget.GridLayout
 import java.util.Stack
+import java.util.Timer
+import kotlin.concurrent.schedule
 
 class Lab03Activity : AppCompatActivity() {
 
@@ -34,6 +38,33 @@ class Lab03Activity : AppCompatActivity() {
 
         val mBoardModel = MemoryBoardView(mBoard, columns, rows)
 
+        /*runOnUiThread() {
+            mBoardModel.setOnGameChangeListener { e ->
+                run {
+                    when (e.state) {
+                        GameStates.Matching -> {
+                            e.tiles.map { tile: Tile -> tile.revealed = true }
+                        }
+
+                        GameStates.Match -> {
+                            e.tiles.map { tile: Tile -> tile.revealed = true }
+                        }
+
+                        GameStates.NoMatch -> {
+                            e.tiles.map { tile: Tile -> tile.revealed = true }
+                            Timer().schedule(2000) {
+                                // kod wykonany po 2000 ms
+                                e.tiles.map { tile: Tile -> tile.revealed = false }
+                            }
+                        }
+
+                        GameStates.Finished -> {
+                            Toast.makeText(this, "Game finished", Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                }
+            }
+        }*/
 
         /*for (col in 0 until columns){
             for (row in 0 until rows){
@@ -100,8 +131,8 @@ class MemoryBoardView(
 
                 }
                 gridLayout.addView(btn)
-                //addTile(btn,shuffledIcons.last())
-                //shuffledIcons.removeLast()
+                addTile(btn,shuffledIcons.last())
+                shuffledIcons.removeLast()
             }
         }
     }
@@ -112,6 +143,7 @@ class MemoryBoardView(
 
     private fun onClickTile(v: View) {
         val tile = tiles[v.tag]
+        Log.e("tile","tile clicked")
         matchedPair.push(tile)
         val matchResult = logic.process {
             tile?.tileResource?:-1
