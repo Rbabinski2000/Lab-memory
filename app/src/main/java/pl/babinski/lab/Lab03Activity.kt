@@ -16,7 +16,10 @@ import java.util.Timer
 import kotlin.concurrent.schedule
 
 class Lab03Activity : AppCompatActivity() {
-
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putString("state","game state")
+    }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -38,7 +41,7 @@ class Lab03Activity : AppCompatActivity() {
 
         val mBoardModel = MemoryBoardView(mBoard, columns, rows)
 
-        /*runOnUiThread() {
+        runOnUiThread() {
             mBoardModel.setOnGameChangeListener { e ->
                 run {
                     when (e.state) {
@@ -47,24 +50,31 @@ class Lab03Activity : AppCompatActivity() {
                         }
 
                         GameStates.Match -> {
-                            e.tiles.map { tile: Tile -> tile.revealed = true }
+                            e.tiles.map { tile: Tile ->
+                                tile.revealed = true
+                                tile.paired=true
+                              }
                         }
 
                         GameStates.NoMatch -> {
                             e.tiles.map { tile: Tile -> tile.revealed = true }
-                            Timer().schedule(2000) {
+                            Timer().schedule(1000) {
                                 // kod wykonany po 2000 ms
-                                e.tiles.map { tile: Tile -> tile.revealed = false }
+                                e.tiles.map { tile: Tile -> if(tile.paired!=true)tile.revealed = false }
                             }
                         }
 
                         GameStates.Finished -> {
+                            e.tiles.map { tile: Tile ->
+                                tile.revealed = true
+                                tile.paired=true
+                            }
                             Toast.makeText(this, "Game finished", Toast.LENGTH_SHORT).show()
                         }
                     }
                 }
             }
-        }*/
+        }
 
         /*for (col in 0 until columns){
             for (row in 0 until rows){
@@ -96,12 +106,31 @@ class MemoryBoardView(
     private val cols: Int,
     private val rows: Int
 ) {
+
+
+    private val deckResource: Int= R.drawable.baseline_hourglass_full_24
     private val tiles: MutableMap<String, Tile> = mutableMapOf()
+
     private val icons: List<Int> = listOf(
         R.drawable.baseline_rocket_24,
         R.drawable.baseline_water_drop_24,
         R.drawable.baseline_star_border_24,
         R.drawable.baseline_air_24,
+        R.drawable.baseline_public_24,
+        R.drawable.baseline_workspace_premium_24,
+        R.drawable.baseline_whatshot_24,
+        R.drawable.baseline_sunny_24,
+        R.drawable.baseline_cloud_24,
+        R.drawable.baseline_timer_24,
+        R.drawable.baseline_battery_saver_24,
+        R.drawable.baseline_directions_car_24,
+        R.drawable.baseline_computer_24,
+        R.drawable.baseline_person_24,
+        R.drawable.baseline_front_hand_24,
+        R.drawable.baseline_back_hand_24,
+        R.drawable.baseline_attach_money_24,
+        R.drawable.baseline_menu_book_24
+
         // dodaj kolejne identyfikatory utworzonych ikon
     )
     init {
@@ -136,22 +165,29 @@ class MemoryBoardView(
             }
         }
     }
-    private val deckResource: Int = R.drawable.baseline_hourglass_full_24
+
     private var onGameChangeStateListener: (MemoryGameEvent) -> Unit = { (e) -> }
     private val matchedPair: Stack<Tile> = Stack()
     private val logic: MemoryGameLogic = MemoryGameLogic(cols * rows / 2)
 
     private fun onClickTile(v: View) {
-        val tile = tiles[v.tag]
-        Log.e("tile","tile clicked")
+
+
+        val tile = tiles[v.tag.toString()]?:return
+        //Log.e("tile",tile?.tileResource.toString())
+
         matchedPair.push(tile)
-        val matchResult = logic.process {
-            tile?.tileResource?:-1
-        }
+        if(matchedPair.size<1)return
+
+        val matchResult = logic.process { tile.tileResource }
+
+       // Log.e("result",matchResult.toString())
         onGameChangeStateListener(MemoryGameEvent(matchedPair.toList(), matchResult))
         if (matchResult != GameStates.Matching) {
-            matchedPair.clear()
+                matchedPair.clear()
+
         }
+
     }
 
     fun setOnGameChangeListener(listener: (event: MemoryGameEvent) -> Unit) {
@@ -163,6 +199,12 @@ class MemoryBoardView(
         val tile = Tile(button, resourceImage, deckResource)
 
         tiles[button.tag.toString()] = tile
+    }
+    fun getState():MutableMap<String, Tile>{
+        return tiles
+    }
+    fun setState(table:MutableMap<String, Tile>){
+        //tiles=table;
     }
 }
 
@@ -183,6 +225,14 @@ data class Tile(val button: ImageButton, val tileResource: Int, val deckResource
             }else{
                 button.setImageResource(deckResource)
             }
+        }
+    private var _paired:Boolean=false
+    var paired:Boolean
+        get(){
+            return _paired
+        }
+        set(value){
+            _paired=value
         }
     fun removeOnClickListener(){
         button.setOnClickListener(null)
