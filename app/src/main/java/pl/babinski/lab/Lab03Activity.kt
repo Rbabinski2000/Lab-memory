@@ -1,9 +1,17 @@
 package pl.babinski.lab
 
+import android.animation.Animator
+import android.animation.AnimatorSet
+import android.animation.ObjectAnimator
+import android.content.res.ColorStateList
+import android.graphics.Color
+import android.media.Image
 import android.os.Bundle
 import android.util.Log
 import android.view.Gravity
 import android.view.View
+import android.view.animation.DecelerateInterpolator
+import android.widget.Button
 import android.widget.ImageButton
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
@@ -14,11 +22,15 @@ import androidx.gridlayout.widget.GridLayout
 import java.util.Stack
 import java.util.Timer
 import kotlin.concurrent.schedule
+import kotlin.random.Random
 
 class Lab03Activity : AppCompatActivity() {
+    private lateinit var mBoardModel: MemoryBoardView
+
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
-        outState.putString("state","game state")
+        val gameState=mBoardModel.getState()
+        outState.putSerializable("savedGameState",gameState)
     }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -39,35 +51,75 @@ class Lab03Activity : AppCompatActivity() {
         mBoard.rowCount=rows
 
 
-        val mBoardModel = MemoryBoardView(mBoard, columns, rows)
+        mBoardModel = MemoryBoardView(mBoard, columns, rows)
+        if (savedInstanceState != null){
+            val savedGameInstace=savedInstanceState.getSerializable("savedGameState") as? HashMap<String, String>
+            /*Log.e("konrtola",savedGameInstace.toString())*/
+            if (savedGameInstace != null) {
+                for(entry in savedGameInstace){
+                    val tag:String=entry.key
+                    val value=entry.value.split(",")
+                    val resourceId=value[0].toInt()
+                    var revealed:Boolean
+                    if(value[1]=="true"){
+                        revealed=true;
+                    }else{
+                        revealed=false;
+                    }
+
+                    mBoardModel.setFromSave(tag, resourceId, revealed)
+
+                }
+            }
+        }
 
         runOnUiThread() {
             mBoardModel.setOnGameChangeListener { e ->
                 run {
                     when (e.state) {
                         GameStates.Matching -> {
-                            e.tiles.map { tile: Tile -> tile.revealed = true }
+
+                            e.tiles.map { tile: Tile ->
+
+                                tile.flipTile()
+                                tile.revealed = true
+                            }
                         }
 
                         GameStates.Match -> {
                             e.tiles.map { tile: Tile ->
+
+                                tile.flipTile()
                                 tile.revealed = true
                                 tile.paired=true
+                                tile.animatePairedButton(Runnable {
+                                    tile.button.visibility = View.INVISIBLE
+                                })
+                                tile.removeOnClickListener()
                               }
                         }
 
                         GameStates.NoMatch -> {
-                            e.tiles.map { tile: Tile -> tile.revealed = true }
+                            e.tiles.map { tile: Tile ->
+
+                                tile.flipTile()
+                                tile.revealed = true
+                            }
                             Timer().schedule(1000) {
-                                // kod wykonany po 2000 ms
                                 e.tiles.map { tile: Tile -> if(tile.paired!=true)tile.revealed = false }
                             }
                         }
 
                         GameStates.Finished -> {
                             e.tiles.map { tile: Tile ->
+
+                                tile.flipTile()
                                 tile.revealed = true
                                 tile.paired=true
+                                tile.animatePairedButton(Runnable {
+                                    tile.button.visibility = View.INVISIBLE
+                                })
+                                tile.removeOnClickListener()
                             }
                             Toast.makeText(this, "Game finished", Toast.LENGTH_SHORT).show()
                         }
@@ -111,6 +163,18 @@ class MemoryBoardView(
     private val deckResource: Int= R.drawable.baseline_hourglass_full_24
     private val tiles: MutableMap<String, Tile> = mutableMapOf()
 
+    fun setFromSave(tag:String,resourceId:Int,reveal:Boolean){
+        val tile = tiles[tag] ?: return
+        tile.tileResource = resourceId
+        tile.revealed = reveal
+        tile.paired = reveal
+       /* Log.e("kontrolpairedcheck",tiles[tag]?.paired.toString())*/
+        /*if (reveal) {
+            tile.button.setImageResource(resourceId)
+        } else {
+            tile.button.setImageResource(deckResource)
+        }*/
+    }
     private val icons: List<Int> = listOf(
         R.drawable.baseline_rocket_24,
         R.drawable.baseline_water_drop_24,
@@ -140,8 +204,6 @@ class MemoryBoardView(
             it.shuffle()
         }
 
-        // tu umieść kod pętli tworzący wszystkie karty, który jest obecnie
-        // w aktywności Lab03Activity
         for (col in 0 until cols){
             for (row in 0 until rows){
 
@@ -171,23 +233,17 @@ class MemoryBoardView(
     private val logic: MemoryGameLogic = MemoryGameLogic(cols * rows / 2)
 
     private fun onClickTile(v: View) {
-
-
         val tile = tiles[v.tag.toString()]?:return
-        //Log.e("tile",tile?.tileResource.toString())
 
         matchedPair.push(tile)
         if(matchedPair.size<1)return
 
         val matchResult = logic.process { tile.tileResource }
-
-       // Log.e("result",matchResult.toString())
+        /*if(matchedPair.size>1 && matchedPair[0]==matchedPair[1]) return*/
         onGameChangeStateListener(MemoryGameEvent(matchedPair.toList(), matchResult))
         if (matchResult != GameStates.Matching) {
                 matchedPair.clear()
-
         }
-
     }
 
     fun setOnGameChangeListener(listener: (event: MemoryGameEvent) -> Unit) {
@@ -197,19 +253,22 @@ class MemoryBoardView(
     private fun addTile(button: ImageButton, resourceImage: Int) {
         button.setOnClickListener(::onClickTile)
         val tile = Tile(button, resourceImage, deckResource)
-
         tiles[button.tag.toString()] = tile
     }
-    fun getState():MutableMap<String, Tile>{
-        return tiles
+    fun getState():HashMap<String, String>{
+        val serializableState = HashMap<String, String>()
+        for(entry in tiles){
+            val state:String=entry.value.tileResource.toString()+","+entry.value.paired.toString()
+            serializableState[entry.key]=state
+        }
+
+        return serializableState
     }
-    fun setState(table:MutableMap<String, Tile>){
-        //tiles=table;
-    }
+
 }
 
 //logika karty
-data class Tile(val button: ImageButton, val tileResource: Int, val deckResource: Int) {
+data class Tile(val button: ImageButton, var tileResource: Int, val deckResource: Int) {
     init {
         button.setImageResource(deckResource)
     }
@@ -220,6 +279,7 @@ data class Tile(val button: ImageButton, val tileResource: Int, val deckResource
         }
         set(value){
             _revealed = value
+
             if(_revealed){
                 button.setImageResource(tileResource)
             }else{
@@ -237,6 +297,80 @@ data class Tile(val button: ImageButton, val tileResource: Int, val deckResource
     fun removeOnClickListener(){
         button.setOnClickListener(null)
     }
+    fun animatePairedButton(action: Runnable ) {
+        val button=this.button
+        val set = AnimatorSet()
+        /*button.pivotX = 200f
+        button.pivotY = 200f*/
+
+        val rotation = ObjectAnimator.ofFloat(button, "rotation", 1080f)
+        val scallingX = ObjectAnimator.ofFloat(button, "scaleX", 1f, 2f)
+        val scallingY = ObjectAnimator.ofFloat(button, "scaleY", 1f, 2f)
+        val fade = ObjectAnimator.ofFloat(button, "alpha", 1f, 0f)
+        set.startDelay = 500
+        set.duration = 2000
+        set.interpolator = DecelerateInterpolator()
+        set.playTogether(rotation, scallingX, scallingY, fade)
+        set.addListener(object: Animator.AnimatorListener {
+
+            override fun onAnimationStart(animator: Animator) {
+            }
+
+            override fun onAnimationEnd(animator: Animator) {
+                button.scaleX = 1f
+                button.scaleY = 1f
+                button.alpha = 1f
+                button.backgroundTintList = ColorStateList.valueOf(Color.CYAN)
+
+            }
+
+            override fun onAnimationCancel(animator: Animator) {
+            }
+
+            override fun onAnimationRepeat(animator: Animator) {
+            }
+        })
+        set.start()
+    }
+    fun flipTile() {
+       /* button.animate()
+            .rotationY(90f) // Rotate halfway
+            .setDuration(150)
+            .withEndAction {
+                // Change image when halfway through
+                button.setImageResource(if (revealed) tileResource else deckResource)
+                button.rotationY = -90f // Reverse rotation
+                button.animate().rotationY(0f).setDuration(150).start() // Rotate back to 0°
+            }
+            .start()*/
+        val button=this.button
+        val set = AnimatorSet()
+
+
+        val rotationY = ObjectAnimator.ofFloat(button, "rotationY", 180f)
+        set.play(rotationY)
+        set.duration = 150
+
+        set.addListener(object: Animator.AnimatorListener {
+
+            override fun onAnimationStart(animator: Animator) {
+            }
+            override fun onAnimationEnd(animator: Animator) {
+                /*button.setImageResource(if (revealed) tileResource else deckResource)*/
+                /*if(this@Tile.revealed==false) {
+                    this@Tile.revealed = true
+                }else{
+                    this@Tile.revealed = false
+                }*/
+            }
+            override fun onAnimationCancel(animator: Animator) {
+            }
+            override fun onAnimationRepeat(animator: Animator) {
+            }
+        })
+        set.start()
+    }
+
 }
 enum class GameStates {
     Matching, Match, NoMatch, Finished
