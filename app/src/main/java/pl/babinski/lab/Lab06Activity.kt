@@ -1,5 +1,6 @@
 package pl.babinski.lab
 
+import android.content.res.Resources.Theme
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -25,19 +26,23 @@ class Lab06Activity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
+            LabmemoryTheme {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
                     MainScreen()
                 }
+            }
         }
     }
     @Preview(showBackground = true)
     @Composable
     fun MainScreenPreview() {
+        LabmemoryTheme{
             MainScreen(
             )
+        }
     }
     @Composable
     fun MainScreen() {
