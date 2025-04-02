@@ -1,8 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.gridlayout.widget.GridLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/main_Grid"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".Lab03Activity"/>
+    android:orientation="vertical"
+    tools:context=".Lab03Activity">
+
+    <!-- Toolbar -->
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:background="?attr/colorPrimary"
+        android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
+        app:title="Memory Game"
+        app:titleTextColor="@android:color/white"/>
+
+    <!-- Grid Layout -->
+    <androidx.gridlayout.widget.GridLayout
+        android:id="@+id/main_Grid"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"/>
+</LinearLayout>

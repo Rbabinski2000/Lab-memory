@@ -6,9 +6,15 @@ import android.animation.ObjectAnimator
 import android.content.res.ColorStateList
 import android.graphics.Color
 import android.media.Image
+import android.media.MediaPlayer
 import android.os.Bundle
 import android.util.Log
 import android.view.Gravity
+import android.view.Menu
+import android.view.MenuInflater
+import android.view.MenuItem
+
+
 import android.view.View
 import android.view.animation.DecelerateInterpolator
 import android.widget.Button
@@ -26,6 +32,44 @@ import kotlin.random.Random
 
 class Lab03Activity : AppCompatActivity() {
     private lateinit var mBoardModel: MemoryBoardView
+    lateinit var completionPlayer: MediaPlayer
+    lateinit var negativePLayer: MediaPlayer
+    var isSound:Boolean=true
+
+    override fun onCreateOptionsMenu(menu: Menu): Boolean  {
+       /* val inflater: MenuInflater = menuInflater
+        inflater.inflate(R.menu.board_menu_activity, menu)*/
+        menuInflater.inflate(R.menu.board_menu_activity,menu)
+        return true
+    }
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return when (item.itemId) {
+            R.id.board_activity_sound -> {
+                if (isSound) {
+                    Toast.makeText(this, "Sound turned off", Toast.LENGTH_SHORT).show()
+                    item.setIcon(R.drawable.baseline_alarm_off_24)
+                } else {
+                    Toast.makeText(this, "Sound turned on", Toast.LENGTH_SHORT).show()
+                    item.setIcon(R.drawable.baseline_alarm_24)
+                }
+                isSound = !isSound
+                true
+            }
+            else -> super.onOptionsItemSelected(item)
+        }
+    }
+    override protected fun onResume() {
+        super.onResume()
+        completionPlayer = MediaPlayer.create(applicationContext, R.raw.completion)
+        negativePLayer = MediaPlayer.create(applicationContext, R.raw.negative_guitar)
+    }
+
+
+    override protected fun onPause() {
+        super.onPause();
+        completionPlayer.release()
+        negativePLayer.release()
+    }
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
@@ -36,6 +80,7 @@ class Lab03Activity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContentView(R.layout.activity_lab03)
+        setSupportActionBar(findViewById(R.id.toolbar))
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main_Grid)) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
@@ -87,6 +132,9 @@ class Lab03Activity : AppCompatActivity() {
                         }
 
                         GameStates.Match -> {
+                            if (isSound) {
+                                completionPlayer.start()
+                            }
                             e.tiles.map { tile: Tile ->
 
                                 tile.flipTile()
@@ -100,10 +148,14 @@ class Lab03Activity : AppCompatActivity() {
                         }
 
                         GameStates.NoMatch -> {
+                            if (isSound) {
+                                negativePLayer.start()
+                            }
                             e.tiles.map { tile: Tile ->
 
                                 tile.flipTile()
                                 tile.revealed = true
+                                tile.shakeTile()
                             }
                             Timer().schedule(1000) {
                                 e.tiles.map { tile: Tile -> if(tile.paired!=true)tile.revealed = false }
@@ -111,6 +163,9 @@ class Lab03Activity : AppCompatActivity() {
                         }
 
                         GameStates.Finished -> {
+                            if (isSound) {
+                                completionPlayer.start()
+                            }
                             e.tiles.map { tile: Tile ->
 
                                 tile.flipTile()
@@ -239,7 +294,13 @@ class MemoryBoardView(
         if(matchedPair.size<1)return
 
         val matchResult = logic.process { tile.tileResource }
-        /*if(matchedPair.size>1 && matchedPair[0]==matchedPair[1]) return*/
+        matchedPair.map{tile:Tile->
+            Log.e("kontrola",tile.button.tag.toString())}
+        if(matchedPair.size==2 && matchedPair[0].button.tag==matchedPair[1].button.tag){
+            onGameChangeStateListener(MemoryGameEvent(matchedPair.toList(), GameStates.NoMatch))
+            matchedPair.clear()
+            return
+        }
         onGameChangeStateListener(MemoryGameEvent(matchedPair.toList(), matchResult))
         if (matchResult != GameStates.Matching) {
                 matchedPair.clear()
@@ -304,8 +365,8 @@ data class Tile(val button: ImageButton, var tileResource: Int, val deckResource
         button.pivotY = 200f*/
 
         val rotation = ObjectAnimator.ofFloat(button, "rotation", 1080f)
-        val scallingX = ObjectAnimator.ofFloat(button, "scaleX", 1f, 2f)
-        val scallingY = ObjectAnimator.ofFloat(button, "scaleY", 1f, 2f)
+        val scallingX = ObjectAnimator.ofFloat(button, "scaleX", 1f, 0.5f)
+        val scallingY = ObjectAnimator.ofFloat(button, "scaleY", 1f, 0.5f)
         val fade = ObjectAnimator.ofFloat(button, "alpha", 1f, 0f)
         set.startDelay = 500
         set.duration = 2000
@@ -319,8 +380,8 @@ data class Tile(val button: ImageButton, var tileResource: Int, val deckResource
             override fun onAnimationEnd(animator: Animator) {
                 button.scaleX = 1f
                 button.scaleY = 1f
-                button.alpha = 1f
-                button.backgroundTintList = ColorStateList.valueOf(Color.CYAN)
+                button.alpha = 0f
+               /* button.backgroundTintList = ColorStateList.valueOf(Color.CYAN)*/
 
             }
 
@@ -345,7 +406,7 @@ data class Tile(val button: ImageButton, var tileResource: Int, val deckResource
             .start()*/
         val button=this.button
         val set = AnimatorSet()
-
+        button.rotationY = 0f
 
         val rotationY = ObjectAnimator.ofFloat(button, "rotationY", 180f)
         set.play(rotationY)
@@ -369,6 +430,12 @@ data class Tile(val button: ImageButton, var tileResource: Int, val deckResource
             }
         })
         set.start()
+    }
+    fun shakeTile() {
+        val shake = ObjectAnimator.ofFloat(button, "translationX", -30f, 30f, -20f, 20f, -10f, 10f, 0f)
+        shake.duration = 500
+        shake.interpolator = DecelerateInterpolator()
+        shake.start()
     }
 
 }
