@@ -11,6 +11,7 @@ import androidx.core.view.WindowInsetsCompat
 import pl.babinski.lab.Lab01Activity
 import pl.babinski.lab.Lab02Activity
 import pl.babinski.lab.R
+import pl.babinski.lab.Lab06.Lab06Activity
 
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -32,6 +33,11 @@ class MainActivity : AppCompatActivity() {
     fun onClickMainBtnRunLab02(v: View){
         Toast.makeText(this, "Clicked", Toast.LENGTH_SHORT).show()
         val intent = Intent(this, Lab02Activity::class.java)
+        startActivity(intent)
+    }
+    fun onClickMainBtnRunLab06(v: View){
+        Toast.makeText(this, "Clicked", Toast.LENGTH_SHORT).show()
+        val intent = Intent(this, Lab06Activity::class.java)
         startActivity(intent)
     }
 }

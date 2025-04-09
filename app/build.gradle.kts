@@ -5,11 +5,11 @@ plugins {
 
 android {
     namespace = "pl.babinski.lab"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "pl.babinski.lab"
-        minSdk = 24
+        minSdk = 26
         targetSdk = 34
         versionCode = 1
         versionName = "1.0"
@@ -56,7 +56,6 @@ dependencies {
     implementation(libs.androidx.gridlayout)
     implementation(libs.androidx.runtime.android)
     implementation(libs.androidx.navigation.runtime.ktx)
-    implementation(libs.androidx.material3.android)
     implementation(libs.androidx.navigation.compose)
     implementation(libs.androidx.ui.tooling.preview.android)
     implementation(libs.androidx.lifecycle.runtime.ktx)
