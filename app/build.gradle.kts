@@ -1,15 +1,16 @@
 plugins {
-    alias(libs.plugins.android.application)
-    alias(libs.plugins.jetbrains.kotlin.android)
-    id("com.google.devtools.ksp") version "1.9.20-1.0.14"
+    alias(libs.plugins.androidApplication)
+    alias(libs.plugins.jetbrainsKotlinAndroid)
+    id("com.google.devtools.ksp") version "2.0.21-1.0.27"
+    id("org.jetbrains.kotlin.plugin.compose") version "2.0.21"
 }
 
 android {
-    namespace = "pl.babinski.lab"
+    namespace = "pl.recordit.pam.lab06"
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "pl.babinski.lab"
+        applicationId = "pl.recordit.pam.lab06"
         minSdk = 26
         targetSdk = 34
         versionCode = 1
@@ -24,21 +25,25 @@ android {
     buildTypes {
         release {
             isMinifyEnabled = false
-            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
         }
     }
-    buildFeatures {
-        compose=true
-    }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
     kotlinOptions {
-        jvmTarget = "1.8"
+        jvmTarget = "17"
+    }
+    buildFeatures {
+        compose = true
+        viewBinding = true
     }
     composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.1"
+        kotlinCompilerExtensionVersion = "1.5.12"
     }
     packaging {
         resources {
@@ -48,32 +53,29 @@ android {
 }
 
 dependencies {
-    val room_version = "2.6.1"
-
-    implementation("androidx.room:room-runtime:$room_version")
-    implementation("androidx.room:room-ktx:$room_version")
-// To use Kotlin Symbol Processing (KSP)
-    ksp("androidx.room:room-compiler:$room_version")
 
     implementation(libs.androidx.core.ktx)
-    implementation(libs.androidx.appcompat)
-
-    implementation(libs.androidx.activity)
-    implementation(libs.androidx.constraintlayout)
-    implementation(libs.androidx.gridlayout)
-    implementation(libs.androidx.runtime.android)
-    implementation(libs.androidx.navigation.runtime.ktx)
-
-    implementation(libs.androidx.ui.tooling.preview.android)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.ui)
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
-    implementation(libs.material3.android)
+    implementation(libs.androidx.material3)
     implementation(libs.androidx.navigation.compose)
     implementation(libs.material)
+    implementation(libs.androidx.appcompat)
+    implementation(libs.androidx.constraintlayout)
+    implementation(libs.androidx.navigation.fragment.ktx)
+    implementation(libs.androidx.navigation.ui.ktx)
+    //room
+    implementation(libs.androidx.room.common)
+    ksp(libs.androidx.room.compiler)
+    implementation(libs.androidx.room.ktx)
+
+    //notifications
+    implementation(libs.google.accompanist.permissions)
+
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

@@ -4,11 +4,13 @@ import android.app.Application
 import android.content.Context
 
 interface AppContainer {
-    // właściwości zwracające wymagane instancje obiektów w aplikacji
+    val todoTaskRepository: TodoTaskRepository
 }
 
 class AppDataContainer(private val context: Context): AppContainer{
-    //implementacja własciwości
+    override val todoTaskRepository: TodoTaskRepository by lazy{
+        DatabaseTodoTaskRepository(AppDatabase.getInstance(context).taskDao())
+    }
 }
 
 class TodoApplication: Application() {

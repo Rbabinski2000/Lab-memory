@@ -16,7 +16,7 @@ data class TodoTaskEntity(
     val priority: Priority
 )
 {
-    /*fun toModel(): TodoTask {
+    fun toModel(): TodoTask {
         return TodoTask(
             id = id,
             deadline = deadline,
@@ -36,5 +36,5 @@ data class TodoTaskEntity(
                 deadline = model.deadline
             )
         }
-    }*/
+    }
 }

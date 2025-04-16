@@ -28,16 +28,21 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import pl.babinski.lab.Lab06.FormData.FormView
 import pl.babinski.lab.Lab06.ListData.ListItem
+import pl.babinski.lab.Lab06.ListData.ListViewModel
 import pl.babinski.lab.Lab06.ListData.todoTasks
+import pl.babinski.lab.Lab06.VModelProvider.AppViewModelProvider
 import pl.babinski.lab.ui.theme.LabmemoryTheme
 
 class Lab06Activity : ComponentActivity() {
@@ -121,7 +126,11 @@ fun AppTopBar(
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
-fun ListScreen(navController: NavController) {
+fun ListScreen(
+    navController: NavController,
+    viewModel: ListViewModel = viewModel(factory = AppViewModelProvider.Factory)
+    ) {
+    val listUiState by viewModel.listUiState.collectAsState()
     Scaffold(
         topBar = {
             AppTopBar(
@@ -146,11 +155,12 @@ fun ListScreen(navController: NavController) {
                 }
             )
         },
-        content = {
-            LazyColumn(modifier = Modifier.padding(it)) {
-            items(items = todoTasks()) { item ->
-                ListItem(item = item)
+        content = { inner ->
+            LazyColumn(modifier = Modifier.padding(inner)) {
+                items(items = listUiState.items, key = { it.id }) {
+                    ListItem(it)
                 }
+
             }
         }
     )
