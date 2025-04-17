@@ -8,6 +8,7 @@ import android.widget.ProgressBar
 import android.widget.TextView
 import android.widget.Toolbar.LayoutParams
 import androidx.appcompat.app.AppCompatActivity
+import pl.babinski.R
 
 class Lab01Activity : AppCompatActivity() {
     lateinit var mLayout: LinearLayout
@@ -17,7 +18,7 @@ class Lab01Activity : AppCompatActivity() {
     lateinit var mProg:ProgressBar
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_lab01)
+        setContentView(R.layout. activity_lab01)
         mLayout = findViewById(R.id.mainLab01)
 
         mTitle = TextView(this)

@@ -22,6 +22,7 @@ import androidx.gridlayout.widget.GridLayout
 import java.util.Stack
 import java.util.Timer
 import kotlin.concurrent.schedule
+import pl.babinski.R
 
 class Lab03Activity : AppCompatActivity() {
     private lateinit var mBoardModel: MemoryBoardView
@@ -272,7 +273,7 @@ class MemoryBoardView(
                 }
                 gridLayout.addView(btn)
                 addTile(btn,shuffledIcons.last())
-                shuffledIcons.removeLast()
+                shuffledIcons.removeAt(shuffledIcons.lastIndex)
             }
         }
     }

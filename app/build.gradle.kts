@@ -6,11 +6,11 @@ plugins {
 }
 
 android {
-    namespace = "pl.recordit.pam.lab06"
+    namespace = "pl.babinski"
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "pl.recordit.pam.lab06"
+        applicationId = "pl.babinski"
         minSdk = 26
         targetSdk = 34
         versionCode = 1
@@ -70,6 +70,7 @@ dependencies {
     implementation(libs.androidx.navigation.ui.ktx)
     //room
     implementation(libs.androidx.room.common)
+    implementation(libs.androidx.gridlayout)
     ksp(libs.androidx.room.compiler)
     implementation(libs.androidx.room.ktx)
 

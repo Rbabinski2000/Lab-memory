@@ -10,22 +10,22 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:name=".Lab06.data.TodoApplication"
+        android:name=".lab.Lab06.data.TodoApplication"
         android:theme="@style/Theme.Labmemory"
         tools:targetApi="31">
         <activity
-            android:name=".Lab06.Lab06Activity"
+            android:name=".lab.Lab06.Lab06Activity"
             android:exported="false"
             android:label="@string/title_activity_lab06"
             android:theme="@style/Theme.Labmemory" />
         <activity
-            android:name=".Lab03Activity"
+            android:name=".lab.Lab03Activity"
             android:exported="false" />
         <activity
-            android:name=".Lab02Activity"
+            android:name=".lab.Lab02Activity"
             android:exported="false" />
         <activity
-            android:name=".Lab01Activity"
+            android:name=".lab.Lab01Activity"
             android:exported="false" />
         <activity
             android:name="pl.babinski.MainActivity"
