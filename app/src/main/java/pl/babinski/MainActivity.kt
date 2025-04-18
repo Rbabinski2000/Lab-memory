@@ -10,8 +10,8 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import pl.babinski.lab.Lab01Activity
 import pl.babinski.lab.Lab02Activity
-import pl.babinski.lab.R
 import pl.babinski.lab.Lab06.Lab06Activity
+import pl.babinski.lab.R
 
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {

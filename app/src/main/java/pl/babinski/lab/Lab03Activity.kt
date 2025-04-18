@@ -5,6 +5,7 @@ import android.animation.Animator
 import android.animation.AnimatorSet
 import android.animation.ObjectAnimator
 import android.media.MediaPlayer
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.Gravity
@@ -15,6 +16,7 @@ import android.view.animation.DecelerateInterpolator
 import android.widget.ImageButton
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
@@ -84,7 +86,7 @@ class Lab03Activity : AppCompatActivity() {
         val columns = intent.getIntExtra("columns", 3)
         val rows = intent.getIntExtra("rows", 3)
 
-        var mBoard:GridLayout=findViewById(R.id.main_Grid)
+        var mBoard: GridLayout =findViewById(R.id.main_Grid)
         mBoard.columnCount=columns
         mBoard.rowCount=rows
 
@@ -272,7 +274,7 @@ class MemoryBoardView(
                 }
                 gridLayout.addView(btn)
                 addTile(btn,shuffledIcons.last())
-                shuffledIcons.removeLast()
+                shuffledIcons.removeAt(shuffledIcons.lastIndex)
             }
         }
     }
