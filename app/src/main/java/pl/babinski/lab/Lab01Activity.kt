@@ -58,11 +58,10 @@ class Lab01Activity : AppCompatActivity() {
             mBoxes.add(checkBox)
             mButtons.add(mButton)
         }
-        mProg=ProgressBar(
+        mProg = ProgressBar(
             this,
             null,
-            androidx.appcompat.R.attr.progressBarStyle,
-            androidx.appcompat.R.style.Widget_AppCompat_ProgressBar_Horizontal
+            android.R.attr.progressBarStyle,
         )
         mProg.max=6
         mLayout.addView(mProg)
