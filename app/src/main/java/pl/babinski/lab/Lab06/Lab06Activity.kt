@@ -40,18 +40,24 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import pl.babinski.lab.Lab06.FormData.FormView
 import pl.babinski.lab.Lab06.FormData.FormViewModel
 import pl.babinski.lab.Lab06.FormData.TodoTaskInputBody
@@ -205,21 +211,23 @@ fun AppTopBar(
             }
         },
         actions = {
-            if (route !== "form") {
-                OutlinedButton(
-                    onClick = { navController.navigate("list") }
-                )
-                {
-                    Text(
-                        text = "Zapisz"
-                    )
+            if (route != "form") {
+                OutlinedButton(onClick = onSaveClick) {
+                    Text(text = "Zapisz", fontSize = 18.sp)
                 }
             } else {
-                IconButton(onClick = { /*TODO navController.navigate(route)*/ }) {
-                    Icon(imageVector = Icons.Default.Settings, contentDescription = "")
+                // Other actions for non-form screens.
+                IconButton(onClick = { /* TODO: Add settings logic */ }) {
+                    Icon(
+                        imageVector = Icons.Filled.Settings,
+                        contentDescription = "Settings"
+                    )
                 }
-                IconButton(onClick = { /*TODO*/ }) {
-                    Icon(imageVector = Icons.Default.Home, contentDescription = "")
+                IconButton(onClick = { /* TODO: Add home navigation logic */ }) {
+                    Icon(
+                        imageVector = Icons.Filled.Home,
+                        contentDescription = "Home"
+                    )
                 }
             }
         }
@@ -232,26 +240,31 @@ fun ListScreen(
     viewModel: ListViewModel = viewModel(factory = AppViewModelProvider.Factory)
 ) {
     val listUiState by viewModel.listUiState.collectAsState()
+    val items = listUiState.items
+
+    // Derive the nearest undone task only when `items` changes:
+    val nextDeadlineMillis by remember(items) {
+        derivedStateOf {
+            items
+                .filterNot { it.isDone }
+                .minOfOrNull { LocalDateConverter.toMillis(it.deadline) }
+        }
+    }
+
     val context = LocalContext.current
 
-    // Gdy zmieni się lista zadań, szukamy niewykonanych z najbliższym terminem
-    LaunchedEffect(listUiState.items) {
-        val undoneTasks = listUiState.items.filter { !it.isDone }
-        // Jeśli lista niewykonanych zadań nie jest pusta, wyszukujemy zadanie z najbliższym terminem:
-        if (undoneTasks.isNotEmpty()) {
-            val nearestTask = undoneTasks.minByOrNull { task ->
-                LocalDateConverter.toMillis(task.deadline)
-            }
-            nearestTask?.let { task ->
-                // Musimy uzyskać instancję MainActivity, by wywołać metodę scheduleAlarmForTask.
-                // Zakładamy, że LocalContext.current wskazuje na aktywność.
-                if (context is Lab06Activity) {
+    // Only re-run when the *millis* of the next deadline changes:
+    LaunchedEffect(nextDeadlineMillis) {
+
+        if (context is Lab06Activity) {
+            if (nextDeadlineMillis != null) {
+                // find the corresponding task to pass into scheduleAlarmForTask
+                items.firstOrNull {
+                    LocalDateConverter.toMillis(it.deadline) == nextDeadlineMillis
+                }?.let { task ->
                     context.scheduleAlarmForTask(task)
                 }
-            }
-        } else {
-            // Brak niewykonanych zadań – anulujemy alarm
-            if (context is Lab06Activity) {
+            } else {
                 context.cancelAlarm()
             }
         }

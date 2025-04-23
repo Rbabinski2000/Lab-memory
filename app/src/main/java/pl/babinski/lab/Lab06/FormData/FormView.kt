@@ -145,23 +145,5 @@ fun FormView() {
             )
         }
 
-        Spacer(modifier = Modifier.height(16.dp))
-
-        Button(
-            onClick = {
-                /*SaveItem(
-                    TodoTask(
-                        title = title.value,
-                        deadline = date.value,
-                        isDone = isDone.value,
-                        priority = priority.value
-                    )
-                )*/
-            },
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text("Submit")
-        }
-    /*}*/
     }
 }

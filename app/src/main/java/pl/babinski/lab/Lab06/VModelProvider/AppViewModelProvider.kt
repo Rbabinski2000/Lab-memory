@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.Companion.AP
 import androidx.lifecycle.viewmodel.CreationExtras
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
+import pl.babinski.lab.Lab06.FormData.FormViewModel
 import pl.babinski.lab.Lab06.ListData.ListViewModel
 import pl.babinski.lab.Lab06.data.TodoApplication
 
@@ -12,6 +13,12 @@ object AppViewModelProvider {
         initializer {
             ListViewModel(
                 repository =  todoApplication().container.todoTaskRepository
+            )
+        }
+        initializer {
+            FormViewModel(
+                repository = todoApplication().container.todoTaskRepository,
+                dateProvider = todoApplication().container.currentDateProvider
             )
         }
     }
